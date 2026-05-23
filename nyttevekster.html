@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nyttevekstleksikonet</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gd:#1a3a2a;--gm:#2d5a3d;--gs:#4a7c5e;--gp:#c8e6d4;--gmist:#f0f7f3;
+  --am:#b8701f;--cream:#faf8f4;--ink:#1c1c1a;--mu:#6b7564;
+  --bdr:rgba(45,90,61,.13);--shd:0 4px 24px rgba(26,58,42,.1);
+}
+body{font-family:"DM Sans",sans-serif;background:var(--cream);color:var(--ink)}
+header{background:var(--gd);color:#fff;padding:2.5rem 2rem 2rem;text-align:center;position:relative;overflow:hidden}
+header::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 20% 80%,rgba(74,124,94,.4) 0%,transparent 55%),radial-gradient(ellipse at 85% 15%,rgba(74,124,94,.2) 0%,transparent 50%);pointer-events:none}
+header h1{font-family:"Playfair Display",serif;font-size:clamp(1.7rem,4vw,2.8rem);font-weight:700;position:relative}
+header p{font-size:.88rem;color:var(--gp);margin-top:.5rem;font-weight:300;position:relative}
+.hstats{display:flex;justify-content:center;gap:2rem;margin-top:1.25rem;position:relative}
+.sn{display:block;font-size:1.5rem;font-weight:500;color:var(--gp)}
+.sl{font-size:.68rem;color:rgba(200,230,212,.65);text-transform:uppercase;letter-spacing:.08em}
+.ctrl{background:#fff;border-bottom:1px solid var(--bdr);padding:.85rem 1.5rem;position:sticky;top:0;z-index:50;display:flex;gap:.65rem;flex-wrap:wrap;align-items:center;box-shadow:0 2px 10px rgba(0,0,0,.04)}
+.sw{position:relative;flex:1;min-width:160px}
+.sw svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--mu);pointer-events:none;width:15px;height:15px}
+#search{width:100%;padding:.5rem .8rem .5rem 2rem;border:1px solid var(--bdr);border-radius:7px;font-family:inherit;font-size:.85rem;background:var(--gmist);color:var(--ink);outline:none}
+.filters{display:flex;gap:4px;flex-wrap:wrap}
+.fb{padding:.35rem .8rem;border-radius:16px;border:1px solid var(--bdr);background:#fff;font-family:inherit;font-size:.75rem;cursor:pointer;color:var(--mu);transition:all .15s}
+.fb:hover{background:var(--gmist);color:var(--gd)}
+.fb.on{background:var(--gd);color:#fff;border-color:var(--gd)}
+.fb.onm{background:var(--am);color:#fff;border-color:var(--am)}
+#srt{padding:.35rem .65rem;border:1px solid var(--bdr);border-radius:7px;font-family:inherit;font-size:.75rem;background:#fff;color:var(--ink);cursor:pointer;outline:none}
+.layout{display:grid;grid-template-columns:255px 1fr;min-height:calc(100vh - 180px)}
+.sb{border-right:1px solid var(--bdr);background:#fff;overflow-y:auto;max-height:calc(100vh - 108px);position:sticky;top:60px}
+.sbh{padding:.75rem 1rem .4rem;font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--mu);border-bottom:1px solid var(--bdr);font-weight:500}
+#plist{list-style:none}
+.pi{display:flex;align-items:center;gap:8px;padding:.5rem 1rem;cursor:pointer;border-bottom:1px solid rgba(0,0,0,.03);transition:background .1s}
+.pi:hover,.pi.on{background:var(--gmist)}
+.pi.on{border-left:3px solid var(--gs);padding-left:calc(1rem - 3px)}
+.pithumb{width:32px;height:32px;border-radius:5px;overflow:hidden;flex-shrink:0;border:1px solid var(--bdr);background:var(--gmist);display:flex;align-items:center;justify-content:center;position:relative}
+.pin{font-size:.8rem;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pil{font-size:.66rem;color:var(--mu);font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.ds{background:var(--gs)}.dm{background:var(--am)}
+.main{padding:1.25rem}
+.cattabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.1rem;padding-bottom:1rem;border-bottom:1px solid var(--bdr)}
+.catbtn{display:flex;align-items:center;gap:5px;padding:.35rem .85rem;border-radius:16px;border:1px solid var(--bdr);background:#fff;font-family:inherit;font-size:.76rem;cursor:pointer;color:var(--mu);transition:all .15s;white-space:nowrap}
+.catbtn:hover,.catbtn.on{background:var(--gd);color:#fff;border-color:var(--gd)}
+.cbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.ctxt{font-size:.8rem;color:var(--mu)}
+.vtog{display:flex;gap:3px}
+.vb{padding:.3rem .55rem;border:1px solid var(--bdr);background:#fff;border-radius:6px;cursor:pointer;font-size:.8rem;color:var(--mu);transition:all .12s}
+.vb.on{background:var(--gd);color:#fff;border-color:var(--gd)}
+#det{display:none;background:#fff;border:1px solid var(--bdr);border-radius:13px;overflow:hidden;margin-bottom:1.25rem;animation:fu .22s ease}
+@keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.dettop{display:grid;grid-template-columns:280px 1fr}
+.diw{height:250px;overflow:hidden;background:var(--gmist);position:relative;display:flex;align-items:center;justify-content:center;font-size:3.5rem;color:var(--gp)}
+.diw img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.isrc{position:absolute;bottom:5px;left:5px;background:rgba(0,0,0,.52);color:#fff;font-size:.6rem;padding:2px 6px;border-radius:3px;z-index:2}
+.dinfo{padding:1.25rem;display:flex;flex-direction:column}
+.dbadge{display:inline-block;font-size:.68rem;padding:2px 8px;border-radius:9px;font-weight:500;margin-bottom:.5rem;width:fit-content}
+.dname{font-family:"Playfair Display",serif;font-size:1.7rem;font-weight:700;line-height:1.1}
+.dlatin{font-family:"Playfair Display",serif;font-style:italic;font-size:.9rem;color:var(--mu);margin:.2rem 0 .75rem}
+.dcat{display:inline-flex;align-items:center;gap:4px;font-size:.75rem;color:var(--gs);margin-bottom:.6rem;background:var(--gmist);padding:2px 8px;border-radius:8px;width:fit-content}
+.ddesc{font-size:.87rem;color:var(--mu);line-height:1.65;flex:1}
+.dact{display:flex;gap:6px;flex-wrap:wrap;margin-top:1rem}
+.btn{padding:.42rem .9rem;border-radius:7px;font-family:inherit;font-size:.78rem;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:4px;transition:all .15s;border:none}
+.bg{background:var(--gd);color:#fff}.bg:hover{background:var(--gm)}
+.bm{background:var(--gs);color:#fff}.bm:hover{background:var(--gm)}
+.bo{background:var(--gmist);color:var(--gd);border:1px solid var(--bdr)}.bo:hover{background:var(--gp)}
+.detbot{border-top:1px solid var(--bdr);padding:1rem 1.25rem}
+.detbot h3{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mu);margin-bottom:.6rem}
+.rlist{display:flex;flex-wrap:wrap;gap:6px}
+.rl{display:inline-flex;align-items:center;gap:5px;padding:.38rem .8rem;border:1px solid var(--bdr);border-radius:7px;font-size:.78rem;color:var(--gd);text-decoration:none;background:var(--gmist);transition:all .15s}
+.rl:hover{background:var(--gp);border-color:var(--gs)}
+.nor{font-size:.8rem;color:var(--mu)}.nor a{color:var(--gs)}
+.sec-hdr{grid-column:1/-1;display:flex;align-items:center;gap:8px;padding:.4rem 0;margin-top:.4rem;border-bottom:1px solid var(--bdr);font-size:.8rem;font-weight:500;color:var(--gd);text-transform:uppercase;letter-spacing:.07em}
+.sec-hdr .sc{font-size:.7rem;color:var(--mu);text-transform:none;letter-spacing:0;font-weight:400;margin-left:auto}
+#pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:1rem}
+.card{background:#fff;border:1px solid var(--bdr);border-radius:10px;overflow:hidden;cursor:pointer;transition:transform .18s,box-shadow .18s;animation:fu .3s ease both}
+.card:hover{transform:translateY(-3px);box-shadow:var(--shd)}
+.cimg{width:100%;height:135px;background:var(--gmist);position:relative;display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:var(--gp);overflow:hidden}
+.cimg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.card:hover .cimg img{transform:scale(1.05)}
+.cbadge{position:absolute;top:6px;right:6px;font-size:.62rem;padding:2px 6px;border-radius:8px;font-weight:500;z-index:2}
+.bgs{background:rgba(26,58,42,.82);color:#fff}
+.bgm{background:rgba(184,112,31,.88);color:#fff}
+.isrc2{position:absolute;bottom:3px;left:3px;background:rgba(0,0,0,.5);color:#fff;font-size:.56rem;padding:1px 4px;border-radius:3px;z-index:2}
+.cbody{padding:.7rem .8rem}
+.cn{font-size:.87rem;font-weight:500;color:var(--ink)}
+.cl{font-size:.71rem;color:var(--mu);font-style:italic;margin-top:1px}
+.cc{font-size:.68rem;color:var(--gs);margin-top:3px}
+#ptbl{display:none;width:100%;border-collapse:collapse}
+#ptbl th{text-align:left;font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mu);padding:.55rem .85rem;border-bottom:1px solid var(--bdr);white-space:nowrap;cursor:pointer}
+#ptbl th:hover{color:var(--gd)}
+#ptbl td{padding:.55rem .85rem;font-size:.83rem;border-bottom:1px solid rgba(0,0,0,.04);vertical-align:middle}
+#ptbl tr{cursor:pointer;transition:background .1s}
+#ptbl tr:hover td{background:var(--gmist)}
+.tt{width:36px;height:36px;border-radius:5px;border:1px solid var(--bdr);background:var(--gmist);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;font-size:1.1rem}
+.tt img{position:absolute;inset:0;width:36px;height:36px;object-fit:cover}
+.tbdg{font-size:.66rem;padding:2px 7px;border-radius:8px;font-weight:500;white-space:nowrap}
+@media(max-width:860px){.layout{grid-template-columns:1fr}.sb{display:none}.dettop{grid-template-columns:1fr}.diw{height:190px}}
+</style>
+</head>
+<body>
+<header>
+  <div style="font-size:1.6rem;margin-bottom:.35rem;position:relative">&#127807;</div>
+  <h1>Nyttevekstleksikonet</h1>
+  <p>Norges sopp- og nyttevekstforbund &middot; Ville, spiselige vekster i Norge</p>
+  <div class="hstats">
+    <div><span class="sn" id="sTot">0</span><span class="sl">Vekster</span></div>
+    <div><span class="sn" id="sSp">0</span><span class="sl">Spiselige</span></div>
+    <div><span class="sn" id="sMk">0</span><span class="sl">Med merknad</span></div>
+  </div>
+</header>
+
+<div class="ctrl">
+  <div class="sw">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="search" placeholder="S&#248;k norsk eller latinsk navn&#8230;" oninput="render()">
+  </div>
+  <div class="filters" id="fbtns"></div>
+  <select id="srt" onchange="render()">
+    <option value="az">Navn A &#8594; &#197;</option>
+    <option value="za">Navn &#197; &#8594; A</option>
+    <option value="cat">Etter kategori</option>
+    <option value="lat">Latin A &#8594; Z</option>
+  </select>
+</div>
+
+<div class="layout">
+  <aside class="sb">
+    <div class="sbh" id="sbCnt">Laster&#8230;</div>
+    <ul id="plist"></ul>
+  </aside>
+  <main class="main">
+    <div id="det"></div>
+    <div class="cattabs" id="cattabs"></div>
+    <div class="cbar">
+      <span class="ctxt" id="cntTxt"></span>
+      <div class="vtog">
+        <button class="vb on" id="vbg" onclick="setV('g')">&#9638; Kort</button>
+        <button class="vb" id="vbt" onclick="setV('t')">&#9776; Liste</button>
+      </div>
+    </div>
+    <div id="pgrid"></div>
+    <table id="ptbl">
+      <thead><tr>
+        <th style="width:44px"></th>
+        <th>Norsk navn</th>
+        <th>Latinsk navn</th>
+        <th>Kategori</th>
+        <th>Spiselighet</th>
+        <th>Mer info</th>
+      </tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </main>
+</div>
+
+<script>
+const CATS = {
+  baer:    { e:"&#127822;", l:"B&#230;r" },
+  urter:   { e:"&#127807;", l:"Urter &amp; krydder" },
+  blomster:{ e:"&#127800;", l:"Blomster" },
+  traer:   { e:"&#127794;", l:"Tr&#230;r &amp; busker" },
+  strand:  { e:"&#127754;", l:"Strand &amp; kyst" },
+  fjell:   { e:"&#9968;",   l:"Fjell &amp; myr" },
+  rot:     { e:"&#129380;", l:"R&#248;tter &amp; knoller" },
+  bregner: { e:"&#127807;", l:"Bregner &amp; siv" }
+};
+
+const DATA = [
+  {n:"Bl&#229;b&#230;r",la:"Vaccinium myrtillus",t:"s",cat:"baer",desc:"Norges mest plukket b&#230;r &ndash; rikt p&#229; antioksidanter. Til gr&#248;t, kaker, syltet&#248;y og saft.",nsnf:"https://soppognyttevekster.no/nyttevekst/blabaer/",rec:[{t:"Bl&#229;b&#230;rsyltet&#248;y",u:"https://www.matprat.no/oppskrifter/kos/blabarsyltetoy/"},{t:"Bl&#229;b&#230;rgr&#248;t",u:"https://www.matprat.no/oppskrifter/tradisjon/blabaergrot/"},{t:"T&#248;rket bl&#229;b&#230;r &ndash; viltgodt.no",u:"https://www.viltgodt.no/torka-blabaer/"}]},
+  {n:"Tytteb&#230;r",la:"Vaccinium vitis-idaea",t:"s",cat:"baer",desc:"Norges klassiske b&#230;r. Syrlig og aromatisk. Tytteb&#230;rsyltet&#248;y er uunv&#230;rlig til viltkj&#248;tt.",nsnf:"https://soppognyttevekster.no/nyttevekst/tyttebaer/",rec:[{t:"R&#248;rte tytteb&#230;r",u:"https://www.matprat.no/oppskrifter/tradisjon/rorte-tyttebar/"},{t:"Tytteb&#230;rr&#248;mme",u:"https://www.matprat.no/oppskrifter/tradisjon/tyttebarromme/"},{t:"Tytteb&#230;r &ndash; viltgodt.no",u:"https://www.viltgodt.no/tyttebaer-2/"}]},
+  {n:"Molte",la:"Rubus chamaemorus",t:"s",cat:"baer",desc:"Norges gullb&#230;r! Gule aromatiske b&#230;r fra myra. Til syltet&#248;y, krem og lik&#248;r.",nsnf:"https://soppognyttevekster.no/nyttevekst/molte/",rec:[{t:"Moltekrem",u:"https://www.matprat.no/oppskrifter/tradisjon/moltekrem/"},{t:"Molte &ndash; viltgodt.no",u:"https://www.viltgodt.no/molte/"}]},
+  {n:"Bringeb&#230;r",la:"Rubus idaeus",t:"s",cat:"baer",desc:"Et av Norges mest elskede b&#230;r. R&#248;d, s&#248;t og aromatisk.",nsnf:"https://soppognyttevekster.no/nyttevekst/bringebaer-12/",rec:[{t:"Bringeb&#230;rsyltet&#248;y",u:"https://www.matprat.no/oppskrifter/tradisjon/bringebaersyltetoy/"},{t:"Bringeb&#230;rkake",u:"https://www.matprat.no/oppskrifter/bakverk/bringebaerkake/"}]},
+  {n:"Bj&#248;rneb&#230;r",la:"Rubus fruticosus",t:"s",cat:"baer",desc:"Saftige svarte b&#230;r fra tornete busker. Til syltet&#248;y, pai og smoothie.",nsnf:"https://soppognyttevekster.no/nyttevekst/bjornebaer/",rec:[{t:"Bj&#248;rneb&#230;rsyltet&#248;y",u:"https://www.matprat.no/oppskrifter/tradisjon/bjornebarsyltetoy/"}]},
+  {n:"Markjordb&#230;r",la:"Fragaria vesca",t:"s",cat:"baer",desc:"Vill jordb&#230;r med intens, s&#248;t smak. Spis fra planten eller lag syltet&#248;y.",nsnf:"https://soppognyttevekster.no/nyttevekst/markjordbaer-7/",rec:[{t:"Jordb&#230;rsyltet&#248;y",u:"https://www.matprat.no/oppskrifter/tradisjon/jordbarsyltetoy/"}]},
+  {n:"Krekling",la:"Empetrum nigrum",t:"s",cat:"fjell",desc:"Svarte b&#230;r p&#229; lyngplante i fjellet. Syrlige og aromatiske.",nsnf:"https://soppognyttevekster.no/nyttevekst/krekling/",rec:[{t:"Krekling &ndash; viltgodt.no",u:"https://www.viltgodt.no/krekling/"}]},
+  {n:"&#197;kerb&#230;r",la:"Rubus arcticus",t:"s",cat:"baer",desc:"Liten aromatisk b&#230;rplante fra Nord-Norge. Sv&#230;rt smakfulle r&#248;de b&#230;r.",nsnf:"https://soppognyttevekster.no/nyttevekst/akerbaer/",rec:[{t:"&#197;kerb&#230;r &ndash; viltgodt.no",u:"https://www.viltgodt.no/akerbaer/"}]},
+  {n:"Blokkeb&#230;r",la:"Vaccinium uliginosum",t:"s",cat:"baer",desc:"Bl&#229;svarte b&#230;r fra myr og fjell. Mildere smak enn bl&#229;b&#230;r.",nsnf:"https://soppognyttevekster.no/nyttevekst/blokkebaer/",rec:[]},
+  {n:"Traneb&#230;r",la:"Vaccinium oxycoccos",t:"s",cat:"fjell",desc:"R&#248;de b&#230;r fra myr. Syrlige og aromatiske &ndash; til saus, gel&#233; og juice.",nsnf:"https://soppognyttevekster.no/nyttevekst/tranebaer/",rec:[{t:"Traneb&#230;rsaus",u:"https://www.matprat.no/oppskrifter/tradisjon/tranebarsaus/"}]},
+  {n:"Svartsurb&#230;r",la:"Aronia melanocarpa",t:"s",cat:"baer",desc:"Svarte b&#230;r rike p&#229; antioksidanter. Til syltet&#248;y, juice og helseprodukter.",nsnf:"https://soppognyttevekster.no/nyttevekst/svartsurbaer/",rec:[{t:"Aroniamarmelade &ndash; godt.no",u:"https://www.godt.no/oppskrift/aroniamarmelade/"}]},
+  {n:"Teieb&#230;r",la:"Rubus saxatilis",t:"s",cat:"baer",desc:"R&#248;de b&#230;r i skog og fjell. Syrlige og saftige &ndash; gode til syltet&#248;y.",nsnf:"https://soppognyttevekster.no/nyttevekst/teiebaer-3/",rec:[]},
+  {n:"Nakkeb&#230;r",la:"Fragaria viridis",t:"s",cat:"baer",desc:"Ligner markjordb&#230;r men med gr&#248;nnlig farge. Sv&#230;rt aromatisk og s&#248;t smak.",nsnf:"https://soppognyttevekster.no/nyttevekst/nakkebaer/",rec:[]},
+  {n:"Rypeb&#230;r",la:"Arctous alpina",t:"s",cat:"fjell",desc:"Svarte b&#230;r fra alpin lyngplante. Saftige og milde.",nsnf:"https://soppognyttevekster.no/nyttevekst/rypebaer/",rec:[]},
+  {n:"Skrubb&#230;r",la:"Chamaepericlymenum suecicum",t:"s",cat:"baer",desc:"R&#248;de b&#230;r p&#229; liten skogplante.",nsnf:"https://soppognyttevekster.no/nyttevekst/skrubbaer/",rec:[]},
+  {n:"Ramsl&#248;k",la:"Allium ursinum",t:"s",cat:"urter",desc:"Vill hvitl&#248;k med breie blader. Sterk hvitl&#248;kssmak. Til pesto, sm&#248;r, suppe og pasta.",nsnf:"https://soppognyttevekster.no/nyttevekst/ramslok/",rec:[{t:"Ramsl&#248;kpesto",u:"https://www.matprat.no/oppskrifter/kos/ramslokpesto/"},{t:"Ramsl&#248;ksm&#248;r",u:"https://www.matprat.no/oppskrifter/gjester/ramsloksmor/"},{t:"Kyllingsuppe m/ramsl&#248;k",u:"https://www.matprat.no/oppskrifter/gjester/kremet-kyllingsuppe-med-ramslok/"}]},
+  {n:"Stornesle",la:"Urtica dioica",t:"s",cat:"urter",desc:"Brennes, men koking n&#248;ytraliserer brodden. Unge skudd smaker som spinat.",nsnf:"https://soppognyttevekster.no/nyttevekst/stornesle-10/",rec:[{t:"Neslesuppe",u:"https://www.matprat.no/oppskrifter/middag/neslesuppe/"},{t:"Neslepesto",u:"https://www.matprat.no/oppskrifter/tilbehor/nesleopesto/"},{t:"Nesle &ndash; viltgodt.no",u:"https://www.viltgodt.no/nesle/"}]},
+  {n:"Skvallerk&#229;l",la:"Aegopodium podagraria",t:"s",cat:"urter",desc:"Beryktet hageugras, men utmerket mat! Smaker som blanding av persille og selleri.",nsnf:"https://soppognyttevekster.no/nyttevekst/skvallerkal-9/",rec:[{t:"Skvallerk&#229;l &ndash; viltgodt.no",u:"https://www.viltgodt.no/skvallerkaal/"},{t:"Villurtpesto",u:"https://www.matprat.no/oppskrifter/tilbehor/villurtpesto/"}]},
+  {n:"Grasl&#248;k",la:"Allium schoenoprasum",t:"s",cat:"urter",desc:"Vill gressl&#248;k med mild l&#248;ksmak. Brukes finhakket i retter, sauser, egg og ost.",nsnf:"https://soppognyttevekster.no/nyttevekst/hagegresslok-sibirgresslok/",rec:[{t:"Gressl&#248;ksm&#248;r",u:"https://www.matprat.no/oppskrifter/tilbehor/gressloksmor/"}]},
+  {n:"Engsyre",la:"Rumex acetosa",t:"s",cat:"urter",desc:"Frisk syrlig smak. Brukes i salater, supper og sauser.",nsnf:"https://soppognyttevekster.no/nyttevekst/engsyre-11/",rec:[{t:"Syresuppe",u:"https://www.matprat.no/oppskrifter/middag/potetsuppe-med-syre/"}]},
+  {n:"Karve",la:"Carum carvi",t:"s",cat:"urter",desc:"Fr&#248;ene er klassisk norsk krydder i flatbr&#248;d og gammelost.",nsnf:"https://soppognyttevekster.no/nyttevekst/karve-9/",rec:[{t:"Flatbr&#248;d",u:"https://www.matprat.no/oppskrifter/tradisjon/flatbrod/"}]},
+  {n:"Bergmynte",la:"Origanum vulgare",t:"s",cat:"urter",desc:"Vill oregano med intens, aromatisk smak. Brukes til pizza, pasta og kj&#248;tt.",nsnf:"https://soppognyttevekster.no/nyttevekst/bergmynte-13/",rec:[{t:"Pizzasaus",u:"https://www.matprat.no/oppskrifter/middag/enkel-pizzasaus/"}]},
+  {n:"Mynter",la:"Mentha",t:"s",cat:"urter",desc:"Frisk og aromatisk urte. Til te, desserter, sauser og drinker.",nsnf:"https://soppognyttevekster.no/nyttevekst/mynter/",rec:[{t:"Myntete",u:"https://www.matprat.no/oppskrifter/drikke/myntete/"}]},
+  {n:"Timian",la:"Thymus serpyllum",t:"s",cat:"urter",desc:"Vill timian med intens aroma. Brukes som krydder til kj&#248;tt og supper.",nsnf:"https://soppognyttevekster.no/nyttevekst/timian-7/",rec:[{t:"Lam med timian",u:"https://www.matprat.no/oppskrifter/middag/lammestek-med-timian/"}]},
+  {n:"L&#248;kurt",la:"Alliaria petiolata",t:"s",cat:"urter",desc:"Hvite blomster, smaker av hvitl&#248;k og sennep. Gode i salater og pesto.",nsnf:"https://soppognyttevekster.no/nyttevekst/lokurt-17/",rec:[{t:"L&#248;kurtpesto &ndash; viltgodt.no",u:"https://www.viltgodt.no/lokurt/"}]},
+  {n:"Ryllik",la:"Achillea millefolium",t:"s",cat:"urter",desc:"Aromatiske blader brukes som krydder og te.",nsnf:"https://soppognyttevekster.no/nyttevekst/ryllik-4/",rec:[{t:"Ryllik &ndash; viltgodt.no",u:"https://www.viltgodt.no/ryllik/"}]},
+  {n:"Parkslirekne",la:"Reynoutria japonica",t:"s",cat:"urter",desc:"Invasiv art. Unge skudd om v&#229;ren smaker som rabarbra.",nsnf:"https://soppognyttevekster.no/nyttevekst/parkslirekne/",rec:[{t:"Parkslirekne &ndash; viltgodt.no",u:"https://www.viltgodt.no/parkslirekne/"}]},
+  {n:"Humle",la:"Humulus lupulus",t:"s",cat:"urter",desc:"Unge skudd om v&#229;ren smaker som asparges. En delikatesse!",nsnf:"https://soppognyttevekster.no/nyttevekst/humle/",rec:[{t:"Humleskudd &ndash; viltgodt.no",u:"https://www.viltgodt.no/humle/"}]},
+  {n:"Groblad",la:"Plantago major",t:"s",cat:"urter",desc:"Alminnelig ugras. Unge blader er milde og kan brukes i salater.",nsnf:"https://soppognyttevekster.no/nyttevekst/groblad/",rec:[]},
+  {n:"Meldestokk",la:"Chenopodium album",t:"s",cat:"urter",desc:"N&#230;ringsrikt ugras. Unge blader smaker som spinat.",nsnf:"https://soppognyttevekster.no/nyttevekst/meldestokk-7/",rec:[]},
+  {n:"Dauvnesle",la:"Lamium album",t:"s",cat:"urter",desc:"Hvit blomst &ndash; stikker ikke. Unge blader dampede smaker som spinat.",nsnf:"https://soppognyttevekster.no/nyttevekst/dovnesle-13/",rec:[{t:"Neslesuppe",u:"https://www.matprat.no/oppskrifter/middag/neslesuppe/"}]},
+  {n:"Vassarve",la:"Stellaria media",t:"s",cat:"urter",desc:"Vanlig ugras &ndash; faktisk mat! Unge skudd gode i salater og smoothies.",nsnf:"https://soppognyttevekster.no/nyttevekst/vassarve-5/",rec:[]},
+  {n:"Vill-l&#248;k",la:"Allium oleraceum",t:"s",cat:"urter",desc:"Vill l&#248;k med l&#248;k/hvitl&#248;kssmak. Hele planten er spiselig.",nsnf:"https://soppognyttevekster.no/nyttevekst/vill-lok/",rec:[]},
+  {n:"Geitrams",la:"Chamaenerion angustifolium",t:"s",cat:"blomster",desc:"Rosa blomsterplante p&#229; hogstflater. Unge skudd som asparges, blomster i te.",nsnf:"https://soppognyttevekster.no/nyttevekst/geitrams/",rec:[{t:"Geitrams &ndash; viltgodt.no",u:"https://www.viltgodt.no/geitrams/"}]},
+  {n:"L&#248;vetann",la:"Taraxacum officinale",t:"s",cat:"blomster",desc:"All-round nyttevekst. Blader i salater, blomster til sirup, r&#248;tter til kaffeerstatning.",nsnf:"https://soppognyttevekster.no/nyttevekst/lovetann-17/",rec:[{t:"L&#248;vetannsirup",u:"https://www.matprat.no/oppskrifter/tradisjon/lovetannsirup/"},{t:"L&#248;vetann &ndash; viltgodt.no",u:"https://www.viltgodt.no/lovetann/"}]},
+  {n:"Stemorsblom",la:"Viola tricolor",t:"s",cat:"blomster",desc:"Trefarget fiol. Blomstene brukes som spiselig pynt p&#229; kaker og i salater.",nsnf:"https://soppognyttevekster.no/nyttevekst/stemorsblomst/",rec:[{t:"Krystalliserte blomster &ndash; godt.no",u:"https://www.godt.no/oppskrift/krystalliserte-blomster/"}]},
+  {n:"Engfiol",la:"Viola canina",t:"s",cat:"blomster",desc:"Bl&#229;-lilla blomst. Blomstene brukes krystallisert som pynt p&#229; kaker.",nsnf:"https://soppognyttevekster.no/nyttevekst/engfiol-3/",rec:[{t:"Krystalliserte blomster &ndash; godt.no",u:"https://www.godt.no/oppskrift/krystalliserte-blomster/"}]},
+  {n:"Hvitbl&#248;ver",la:"Trifolium repens",t:"s",cat:"blomster",desc:"Vanlig gresskmarkskl&#248;ver. Blomstene og bladene er spiselige.",nsnf:"https://soppognyttevekster.no/nyttevekst/hvitklover-4/",rec:[]},
+  {n:"R&#248;dkl&#248;ver",la:"Trifolium pratense",t:"s",cat:"blomster",desc:"Rosa blomsterklaser. Blomstene er s&#248;te &ndash; brukes i salater og te.",nsnf:"https://soppognyttevekster.no/nyttevekst/rodklover-9/",rec:[]},
+  {n:"Prestekrage",la:"Leucanthemum vulgare",t:"s",cat:"blomster",desc:"Hvite blomster med gul midtknapp. Blader og blomster brukes i salater og som pynt.",nsnf:"https://soppognyttevekster.no/nyttevekst/prestekrage-16/",rec:[]},
+  {n:"Tusenfryd",la:"Bellis perennis",t:"s",cat:"blomster",desc:"Hvit blomst i plenen. Milde og litt bitre &ndash; brukes som pynt og i salater.",nsnf:"https://soppognyttevekster.no/nyttevekst/tusenfryd/",rec:[]},
+  {n:"Marian&#248;kleblom",la:"Primula veris",t:"s",cat:"blomster",desc:"Gule v&#229;rblomster. Brukes i salater, te og krystallisert som sukker.",nsnf:"https://soppognyttevekster.no/nyttevekst/marianokleblom-15/",rec:[]},
+  {n:"Bl&#229;klokke",la:"Campanula rotundifolia",t:"s",cat:"blomster",desc:"Elegant lilla blomst. Blader og blomster er spiselige.",nsnf:"https://soppognyttevekster.no/nyttevekst/blaklokke-4/",rec:[]},
+  {n:"Gulmaure",la:"Galium verum",t:"s",cat:"blomster",desc:"Gule blomsterklaser med honningduft. Brukes til &aring; stivne melk og som te.",nsnf:"https://soppognyttevekster.no/nyttevekst/gulmaure-5/",rec:[]},
+  {n:"Skogfiol",la:"Viola riviniana",t:"s",cat:"blomster",desc:"Lilla fiol i skog. Blomstene brukes som pynt p&#229; desserter og i salater.",nsnf:"https://soppognyttevekster.no/nyttevekst/skogfiol-3/",rec:[{t:"Krystalliserte blomster &ndash; godt.no",u:"https://www.godt.no/oppskrift/krystalliserte-blomster/"}]},
+  {n:"Bj&#248;rk",la:"Betula pendula",t:"s",cat:"traer",desc:"Unge blader om v&#229;ren er syrlige og gode i salater. Bj&#248;rksaft tappes om v&#229;ren.",nsnf:"https://soppognyttevekster.no/nyttevekst/bjork-13/",rec:[{t:"Bj&#248;rksaft &ndash; viltgodt.no",u:"https://www.viltgodt.no/bjorksaft/"}]},
+  {n:"Furu",la:"Pinus sylvestris",t:"s",cat:"traer",desc:"Unge furuskudd om v&#229;ren er syrlige og C-vitaminrike. Til sirup og te.",nsnf:"https://soppognyttevekster.no/nyttevekst/furu/",rec:[{t:"Furusirup &ndash; viltgodt.no",u:"https://www.viltgodt.no/furusirup/"}]},
+  {n:"Gran",la:"Picea abies",t:"s",cat:"traer",desc:"Unge, lyse granskudd om v&#229;ren er syrlige og aromatiske. Til sirup og te.",nsnf:"https://soppognyttevekster.no/nyttevekst/gran/",rec:[{t:"Granskuddsirup &ndash; viltgodt.no",u:"https://www.viltgodt.no/gran-sirup/"}]},
+  {n:"Lind",la:"Tilia cordata",t:"s",cat:"traer",desc:"Blomstene brukes til lindeblomste. Unge blader er milde og gode i salater.",nsnf:"https://soppognyttevekster.no/nyttevekst/lind-7/",rec:[{t:"Lindeblomste",u:"https://www.matprat.no/oppskrifter/drikke/lindeblomste/"}]},
+  {n:"Rynkerose",la:"Rosa rugosa",t:"s",cat:"traer",desc:"Rosebladene og nypefrukter er begge spiselige. Nypene er rike p&#229; C-vitamin.",nsnf:"https://soppognyttevekster.no/nyttevekst/roser-nyperoser/",rec:[{t:"Nypesuppe",u:"https://www.matprat.no/oppskrifter/tradisjon/nypesuppe/"},{t:"Nype &ndash; viltgodt.no",u:"https://www.viltgodt.no/nype/"}]},
+  {n:"Tindved",la:"Hippophae rhamnoides",t:"s",cat:"traer",desc:"Oransje b&#230;r rik p&#229; C-vitamin og omega-fettsyrer. Til saft og marmelade.",nsnf:"https://soppognyttevekster.no/nyttevekst/tindved/",rec:[{t:"Tindved &ndash; viltgodt.no",u:"https://www.viltgodt.no/tindved/"}]},
+  {n:"Hegg",la:"Prunus padus",t:"s",cat:"traer",desc:"Hvit blomstring om v&#229;ren, svarte b&#230;r om h&#248;sten. B&#230;rene bitre r&#229; men gode til syltet&#248;y.",nsnf:"https://soppognyttevekster.no/nyttevekst/hegg-2/",rec:[{t:"Heggeb&#230;r &ndash; viltgodt.no",u:"https://www.viltgodt.no/heggebaer/"}]},
+  {n:"Spissbl&#248;nn",la:"Acer platanoides",t:"s",cat:"traer",desc:"Norsk l&#248;nnetre. Saften kan tappes om v&#229;ren og kokes til sirup.",nsnf:"https://soppognyttevekster.no/nyttevekst/spisslonn-9/",rec:[]},
+  {n:"Salturt",la:"Salicornia europaea",t:"s",cat:"strand",desc:"Gr&#248;nn saltsmakende strandsukkulente. Brukes r&#229; i salat, syltet eller dampet.",nsnf:"https://soppognyttevekster.no/nyttevekst/salturt-6/",rec:[{t:"Salturt &ndash; godt.no",u:"https://www.godt.no/oppskrift/salturt-med-smor-og-sitron/"}]},
+  {n:"Strandkj&#248;ks",la:"Ligusticum scothicum",t:"s",cat:"strand",desc:"Kystplante i sellerifamilien. Bladene smaker aromatisk og brukes som krydder.",nsnf:"https://soppognyttevekster.no/nyttevekst/strandkjeks-5/",rec:[]},
+  {n:"Skj&#248;rbuksurt",la:"Cochlearia officinalis",t:"s",cat:"strand",desc:"Kystplante rik p&#229; C-vitamin. Skarpt og sennepsaktig &ndash; brukes i salater.",nsnf:"https://soppognyttevekster.no/nyttevekst/skjorbuksurt-21/",rec:[]},
+  {n:"Strandmelde",la:"Atriplex littoralis",t:"s",cat:"strand",desc:"Melde langs kysten. Bladene smaker som spinat og kan brukes dampede.",nsnf:"https://soppognyttevekster.no/nyttevekst/strandmelde-6/",rec:[]},
+  {n:"Strandarve",la:"Honckenya peploides",t:"s",cat:"strand",desc:"Saftig strandplante. Unge blader og skudd er spr&#248; og milde.",nsnf:"https://soppognyttevekster.no/nyttevekst/strandarve-7/",rec:[]},
+  {n:"&#216;stersurt",la:"Mertensia maritima",t:"m",cat:"strand",desc:"Sjelden kystplante. Smaker av &#248;sters og sj&#248; &ndash; brukes av toppkokker.",nsnf:"https://soppognyttevekster.no/nyttevekst/ostersurt-5/",rec:[]},
+  {n:"Pepperrot",la:"Armoracia rusticana",t:"s",cat:"rot",desc:"Sterk rot med karakteristisk peppersmak. Brukes revet til r&#248;kt fisk og kj&#248;tt.",nsnf:"https://soppognyttevekster.no/nyttevekst/pepperrot-4/",rec:[{t:"Pepperrotsaus",u:"https://www.matprat.no/oppskrifter/tilbehor/pepperrotsaus/"}]},
+  {n:"Pastinakk",la:"Pastinaca sativa",t:"s",cat:"rot",desc:"Vill forgjenger til hagedyrket pastinakk. S&#248;t og n&#230;ringsrik rot.",nsnf:"https://soppognyttevekster.no/nyttevekst/pastinakk-11/",rec:[{t:"Pastinakksuppe",u:"https://www.matprat.no/oppskrifter/middag/pastinakksuppe/"}]},
+  {n:"G&#229;semure",la:"Argentina anserina",t:"s",cat:"rot",desc:"Gule blomster langs veier. R&#248;ttene er s&#248;te og stivelsesrike.",nsnf:"https://soppognyttevekster.no/nyttevekst/gasemure-7/",rec:[]},
+  {n:"Jordn&#248;tt",la:"Conopodium majus",t:"s",cat:"rot",desc:"Knollrot med n&#248;tteaktig smak. Knollene kan spises r&#229; eller kokte.",nsnf:"https://soppognyttevekster.no/nyttevekst/jordnott-3/",rec:[]},
+  {n:"Ullborre",la:"Arctium tomentosum",t:"s",cat:"rot",desc:"Unge stilker kan skrelles og spises &ndash; smaker mildt.",nsnf:"https://soppognyttevekster.no/nyttevekst/ullborre-5/",rec:[]},
+  {n:"Sisselrot",la:"Polypodium vulgare",t:"s",cat:"bregner",desc:"Bregne med s&#248;t lakrisaktig rot. R&#248;ttene tygges som godteri.",nsnf:"https://soppognyttevekster.no/nyttevekst/sisselrot/",rec:[]},
+  {n:"Strutseving",la:"Matteuccia struthiopteris",t:"s",cat:"bregner",desc:"Elegant bregne. Unge fiddleheads om v&#229;ren &ndash; tilberedes som asparges.",nsnf:"https://soppognyttevekster.no/nyttevekst/strutseving/",rec:[{t:"Strutseving &ndash; viltgodt.no",u:"https://www.viltgodt.no/strutseving/"}]},
+  {n:"Bredt dunkjevle",la:"Typha latifolia",t:"s",cat:"bregner",desc:"Kjent sumpplante. Unge skudd om v&#229;ren smaker som asparges.",nsnf:"https://soppognyttevekster.no/nyttevekst/bred-dunkjevle/",rec:[]},
+  {n:"Fjellsyre",la:"Oxyria digyna",t:"s",cat:"fjell",desc:"Bladene er syrlige og saftige &ndash; gode i salater og som snacks p&#229; fjelltur.",nsnf:"https://soppognyttevekster.no/nyttevekst/fjellsyre-13/",rec:[]},
+  {n:"Gj&#248;kesyre",la:"Oxalis acetosella",t:"s",cat:"fjell",desc:"Trekoblede kl&#248;verblader i skogen. Frisk syrlig smak.",nsnf:"https://soppognyttevekster.no/nyttevekst/gjoksyre-11/",rec:[]},
+  {n:"Harerug",la:"Bistorta vivipara",t:"s",cat:"fjell",desc:"Fjellplante. De n&#248;tteaktige spirene p&#229; blomsterstanden er n&#230;ringsrike.",nsnf:"https://soppognyttevekster.no/nyttevekst/harerug-7/",rec:[]},
+  {n:"Turt",la:"Cicerbita alpina",t:"s",cat:"fjell",desc:"H&#248;y fjellplante med bl&#229; blomster. Unge skudd og blader brukes i supper.",nsnf:"https://soppognyttevekster.no/nyttevekst/turt-11/",rec:[]},
+  {n:"Seiersl&#248;k",la:"Allium victorialis",t:"s",cat:"fjell",desc:"Fjell-l&#248;k med bred blad og hvite blomster. Mildere enn ramsl&#248;k.",nsnf:"https://soppognyttevekster.no/nyttevekst/seierslok/",rec:[]},
+  {n:"Svarthyll",la:"Sambucus nigra",t:"m",cat:"traer",desc:"Blomster og modne b&#230;r brukes (ALDRI r&#229; b&#230;r/blader/bark!). Hylleblomstsirup er norsk klassiker.",nsnf:"https://soppognyttevekster.no/nyttevekst/svarthyll/",rec:[{t:"Hylleblomstsirup",u:"https://www.matprat.no/oppskrifter/tradisjon/hylleblomstsirup/"},{t:"Svarthyll &ndash; viltgodt.no",u:"https://www.viltgodt.no/svarthyll/"}]},
+  {n:"Rogn",la:"Sorbus aucuparia",t:"m",cat:"traer",desc:"R&#248;de rogneb&#230;r. Bitre r&#229; &ndash; etter frost eller koking trygge til gel&#233; og syltet&#248;y.",nsnf:"https://soppognyttevekster.no/nyttevekst/rogn-11/",rec:[{t:"Rogneb&#230;rgel&#233;",u:"https://www.matprat.no/oppskrifter/tradisjon/rognebargele/"}]},
+  {n:"Sl&#229;petorn",la:"Prunus spinosa",t:"m",cat:"traer",desc:"Bl&#229;-svarte b&#230;r, bitre r&#229;. Etter frost brukes de til syltet&#248;y og sloe gin.",nsnf:"https://soppognyttevekster.no/nyttevekst/slapetorn/",rec:[{t:"Sl&#229;petorn &ndash; viltgodt.no",u:"https://www.viltgodt.no/slaapetorn/"}]},
+  {n:"Buskhyll",la:"Sambucus racemosa",t:"m",cat:"traer",desc:"R&#248;dglinsende b&#230;r &ndash; KUN kokt! R&#229; b&#230;r gir kvalme.",nsnf:"https://soppognyttevekster.no/nyttevekst/buskhyll/",rec:[]},
+  {n:"Einer",la:"Juniperus communis",t:"m",cat:"traer",desc:"B&#230;rkonglene brukes som krydder til vilt og gin. Bruk sparsomt.",nsnf:"https://soppognyttevekster.no/nyttevekst/einer/",rec:[{t:"Viltgryte",u:"https://www.matprat.no/oppskrifter/middag/viltgryte/"}]},
+  {n:"Kvann",la:"Angelica archangelica",t:"m",cat:"urter",desc:"Stor aromatisk plante. Stilker brukes kandisert. Kan forveksles med giftige planter!",nsnf:"https://soppognyttevekster.no/nyttevekst/kvann-3/",rec:[{t:"Kvann &ndash; viltgodt.no",u:"https://www.viltgodt.no/kvann/"}]},
+  {n:"Mj&#248;durt",la:"Filipendula ulmaria",t:"m",cat:"blomster",desc:"Hvite blomsterklaser med honningduft. Til te, sirup og &#248;l. Inneholder salisylsyre.",nsnf:"https://soppognyttevekster.no/nyttevekst/mjodurt-8/",rec:[{t:"Mj&#248;durtsirup &ndash; viltgodt.no",u:"https://www.viltgodt.no/mjodurt/"}]},
+  {n:"&#197;kersnelle",la:"Equisetum arvense",t:"m",cat:"bregner",desc:"Unge skudd om v&#229;ren kan kokes som gr&#248;nnsak. Inneholder tiaminase &ndash; KUN kokt!",nsnf:"https://soppognyttevekster.no/nyttevekst/akersnelle/",rec:[]},
+  {n:"Pors",la:"Myrica gale",t:"m",cat:"fjell",desc:"Aromatisk myrplante. Brukes i &#248;l og brennevin. Giftige stoffer i store mengder.",nsnf:"https://soppognyttevekster.no/nyttevekst/pors-5/",rec:[]},
+  {n:"Melb&#230;r",la:"Arctostaphylos uva-ursi",t:"m",cat:"fjell",desc:"R&#248;de b&#230;r p&#229; lynghei. Melpulveraktige r&#229; &ndash; bedre kokt til syltet&#248;y.",nsnf:"https://soppognyttevekster.no/nyttevekst/melbaer/",rec:[]},
+  {n:"Sl&#248;ke",la:"Angelica sylvestris",t:"m",cat:"urter",desc:"Stor skjermplante. Kan forveksles med giftkjeks!",nsnf:"https://soppognyttevekster.no/nyttevekst/sloke/",rec:[]},
+  {n:"Myske",la:"Galium odoratum",t:"m",cat:"urter",desc:"Skogplante med s&#248;t vaniljeduft. Til mai-punch og vin. Inneholder kumarin.",nsnf:"https://soppognyttevekster.no/nyttevekst/myske-7/",rec:[]}
+];
+
+// ─── iNaturalist images ──────────────────────────────────────────────────────
+const ICACHE = {};
+function loadImg(latin) {
+  if (latin in ICACHE) return;
+  ICACHE[latin] = "loading";
+  fetch("https://api.inaturalist.org/v1/taxa?q=" + encodeURIComponent(latin) + "&rank=species,genus&per_page=1")
+    .then(r => r.ok ? r.json() : null)
+    .then(d => {
+      if (!d) return;
+      const tx = d.results && d.results[0];
+      const url = tx && tx.default_photo && tx.default_photo.medium_url;
+      ICACHE[latin] = url || null;
+      if (!url) return;
+      document.querySelectorAll(".inat-wrap[data-la]").forEach(el => {
+        if (el.dataset.la !== latin) return;
+        const img = el.querySelector(".inat-img");
+        const ph  = el.querySelector(".inat-ph");
+        const src = el.querySelector(".inat-src");
+        if (img) { img.src = url; img.style.display = "block"; }
+        if (ph)  { ph.style.display = "none"; }
+        if (src) { src.style.display = "block"; }
+      });
+    })
+    .catch(() => { ICACHE[latin] = null; });
+}
+
+function makeImgWrap(latin, wrapClass) {
+  setTimeout(() => loadImg(latin), 10);
+  return `<div class="inat-wrap ${wrapClass}" data-la="${latin.replace(/"/g,"&quot;")}">
+    <span class="inat-ph">&#127807;</span>
+    <img class="inat-img" src="" alt="" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+    <span class="inat-src" style="display:none;position:absolute;bottom:3px;left:3px;background:rgba(0,0,0,.5);color:#fff;font-size:.56rem;padding:1px 4px;border-radius:3px;z-index:2">&#128247; iNaturalist (CC)</span>
+  </div>`;
+}
+
+// ─── State ───────────────────────────────────────────────────────────────────
+let FILT = "alle", CATF = "alle", VIEW = "g", SEL = null;
+
+// ─── Filter buttons (rendered in JS to avoid quote escaping) ─────────────────
+function buildFilterBtns() {
+  const fb = document.getElementById("fbtns");
+  const btns = [
+    {id:"fb-alle", f:"alle", label:"Alle", cls:"on"},
+    {id:"fb-s",    f:"s",    label:"Spiselig", cls:""},
+    {id:"fb-m",    f:"m",    label:"Med merknad", cls:"", style:"border-color:rgba(184,112,31,.25)"},
+  ];
+  fb.innerHTML = "";
+  btns.forEach(b => {
+    const el = document.createElement("button");
+    el.className = "fb" + (b.cls ? " " + b.cls : "");
+    el.textContent = b.label;
+    if (b.style) el.style.cssText = b.style;
+    el.addEventListener("click", () => setF(b.f));
+    fb.appendChild(el);
+  });
+}
+
+function buildCatTabs() {
+  const counts = {};
+  DATA.forEach(p => { counts[p.cat] = (counts[p.cat]||0) + 1; });
+  const ct = document.getElementById("cattabs");
+  ct.innerHTML = "";
+  const allBtn = document.createElement("button");
+  allBtn.className = "catbtn on";
+  allBtn.innerHTML = "&#127807; Alle kategorier";
+  allBtn.addEventListener("click", () => setCat("alle", allBtn));
+  ct.appendChild(allBtn);
+  Object.entries(CATS).forEach(([k, v]) => {
+    if (!counts[k]) return;
+    const btn = document.createElement("button");
+    btn.className = "catbtn";
+    btn.innerHTML = v.e + " " + v.l;
+    btn.addEventListener("click", () => setCat(k, btn));
+    ct.appendChild(btn);
+  });
+}
+
+function setF(f) {
+  FILT = f;
+  document.querySelectorAll(".fb").forEach(b => b.classList.remove("on","onm"));
+  const map = {alle:"fb-alle", s:"fb-s", m:"fb-m"};
+  const el = document.getElementById(map[f]);
+  if (el) el.classList.add(f === "m" ? "onm" : "on");
+  render();
+}
+
+function setCat(c, btn) {
+  CATF = c;
+  document.querySelectorAll(".catbtn").forEach(b => b.classList.remove("on"));
+  btn.classList.add("on");
+  render();
+}
+
+function setV(v) {
+  VIEW = v;
+  document.getElementById("vbg").classList.toggle("on", v === "g");
+  document.getElementById("vbt").classList.toggle("on", v === "t");
+  render();
+}
+
+function getList() {
+  const q = document.getElementById("search").value.toLowerCase();
+  const srt = document.getElementById("srt").value;
+  let list = DATA.filter(p => {
+    if (FILT === "s" && p.t !== "s") return false;
+    if (FILT === "m" && p.t !== "m") return false;
+    if (CATF !== "alle" && p.cat !== CATF) return false;
+    if (q && !p.n.toLowerCase().includes(q) && !p.la.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  list.sort((a, b) => {
+    if (srt === "cat") {
+      const ck = Object.keys(CATS);
+      const ci = x => ck.indexOf(x.cat);
+      return ci(a) !== ci(b) ? ci(a) - ci(b) : a.n.localeCompare(b.n, "nb");
+    }
+    if (srt === "az") return a.n.localeCompare(b.n, "nb");
+    if (srt === "za") return b.n.localeCompare(a.n, "nb");
+    return a.la.localeCompare(b.la);
+  });
+  return list;
+}
+
+function bdg(t, large) {
+  const s = t === "s"
+    ? {bg:"#e1f5ee", c:"#0a6045", l:"Spiselig"}
+    : {bg:"#fdf3e3", c:"#8a5200", l:"Med merknad"};
+  return `<span class="${large ? "dbadge" : "tbdg"}" style="background:${s.bg};color:${s.c}">${s.l}</span>`;
+}
+
+function openDetail(idx) {
+  const p = DATA[idx];
+  SEL = p.n;
+  const cat = CATS[p.cat];
+  const catBdg = cat ? `<div class="dcat">${cat.e} ${cat.l}</div>` : "";
+  const recH = p.rec && p.rec.length
+    ? p.rec.map(r => `<a class="rl" href="${r.u}" target="_blank" rel="noopener">&#128214; ${r.t}</a>`).join("")
+    : `<span class="nor">Ingen oppskrifter. <a href="https://www.matprat.no/s/?q=${encodeURIComponent(p.n)}" target="_blank" rel="noopener">S&#248;k p&#229; matprat.no &#8594;</a></span>`;
+
+  const det = document.getElementById("det");
+  det.style.display = "block";
+  det.innerHTML = `
+    <div class="dettop">
+      ${makeImgWrap(p.la, "diw")}
+      <div class="dinfo">
+        ${bdg(p.t, true)}${catBdg}
+        <div class="dname">${p.n}</div>
+        <div class="dlatin">${p.la}</div>
+        <p class="ddesc">${p.desc}</p>
+        <div class="dact">
+          <a class="btn bg" href="${p.nsnf}" target="_blank" rel="noopener">Les mer p&#229; NSNF &#8599;</a>
+          <a class="btn bm" href="https://www.inaturalist.org/taxa/search?q=${encodeURIComponent(p.la)}" target="_blank" rel="noopener">iNaturalist &#8599;</a>
+          <a class="btn bm" style="background:#2d5a3d" href="https://no.wikipedia.org/wiki/${encodeURIComponent(p.la.replace(/ /g,"_"))}" target="_blank" rel="noopener">Wikipedia &#8599;</a>
+          <button class="btn bo" onclick="closeDetail()">Lukk &#10005;</button>
+        </div>
+      </div>
+    </div>
+    <div class="detbot"><h3>Oppskrifter</h3><div class="rlist">${recH}</div></div>`;
+
+  det.scrollIntoView({behavior:"smooth", block:"nearest"});
+  document.querySelectorAll(".pi").forEach(el => el.classList.toggle("on", el.dataset.idx === String(idx)));
+}
+
+function closeDetail() {
+  document.getElementById("det").style.display = "none";
+  SEL = null;
+  document.querySelectorAll(".pi").forEach(el => el.classList.remove("on"));
+}
+
+function render() {
+  const list = getList();
+  const srt  = document.getElementById("srt").value;
+
+  document.getElementById("cntTxt").textContent = `Viser ${list.length} vekst${list.length !== 1 ? "er" : ""}`;
+  document.getElementById("sbCnt").textContent  = `${list.length} vekster`;
+  document.getElementById("sTot").textContent   = DATA.length;
+  document.getElementById("sSp").textContent    = DATA.filter(p => p.t === "s").length;
+  document.getElementById("sMk").textContent    = DATA.filter(p => p.t === "m").length;
+
+  // Sidebar
+  document.getElementById("plist").innerHTML = list.map(p => {
+    const idx = DATA.indexOf(p);
+    return `<li class="pi${SEL === p.n ? " on" : ""}" data-idx="${idx}" onclick="openDetail(${idx})">
+      ${makeImgWrap(p.la, "pithumb")}
+      <div style="flex:1;min-width:0"><div class="pin">${p.n}</div><div class="pil">${p.la}</div></div>
+      <div class="dot d${p.t === "s" ? "s" : "m"}"></div>
+    </li>`;
+  }).join("");
+
+  // Grid / Table
+  if (VIEW === "g") {
+    document.getElementById("pgrid").style.display = "grid";
+    document.getElementById("ptbl").style.display  = "none";
+
+    let html = "";
+    if (srt === "cat" && CATF === "alle") {
+      const groups = {};
+      list.forEach(p => { (groups[p.cat] = groups[p.cat] || []).push(p); });
+      Object.keys(CATS).forEach(ck => {
+        if (!groups[ck]) return;
+        const cv = CATS[ck];
+        html += `<div class="sec-hdr">${cv.e} ${cv.l}<span class="sc">${groups[ck].length} vekster</span></div>`;
+        groups[ck].forEach(p => { html += cardHtml(p); });
+      });
+    } else {
+      list.forEach(p => { html += cardHtml(p); });
+    }
+    document.getElementById("pgrid").innerHTML = html || "<div style='padding:2rem;color:var(--mu);grid-column:1/-1'>Ingen treff.</div>";
+
+  } else {
+    document.getElementById("pgrid").style.display = "none";
+    document.getElementById("ptbl").style.display  = "table";
+    document.getElementById("tbody").innerHTML = list.map(p => {
+      const idx = DATA.indexOf(p);
+      const cat = CATS[p.cat];
+      return `<tr onclick="openDetail(${idx})">
+        <td>${makeImgWrap(p.la, "tt")}</td>
+        <td><strong>${p.n}</strong></td>
+        <td style="color:var(--mu);font-style:italic;font-size:.78rem">${p.la}</td>
+        <td style="font-size:.78rem">${cat ? cat.e + " " + cat.l : "&ndash;"}</td>
+        <td>${bdg(p.t, false)}</td>
+        <td><a href="${p.nsnf}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--gs);font-size:.77rem">NSNF &#8594;</a></td>
+      </tr>`;
+    }).join("");
+  }
+}
+
+function cardHtml(p) {
+  const idx = DATA.indexOf(p);
+  const cat = CATS[p.cat];
+  return `<div class="card" onclick="openDetail(${idx})">
+    <div style="position:relative">
+      ${makeImgWrap(p.la, "cimg")}
+      <span class="cbadge bg${p.t === "s" ? "s" : "m"}">${p.t === "s" ? "Spiselig" : "Merknad"}</span>
+    </div>
+    <div class="cbody">
+      <div class="cn">${p.n}</div>
+      <div class="cl">${p.la}</div>
+      ${cat ? `<div class="cc">${cat.e} ${cat.l}</div>` : ""}
+    </div>
+  </div>`;
+}
+
+// ─── Init ────────────────────────────────────────────────────────────────────
+buildFilterBtns();
+buildCatTabs();
+render();
+</script>
+</body>
+</html>
